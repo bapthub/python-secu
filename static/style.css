@@ -1,0 +1,129 @@
+body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+    background-color: #f0f0f0;
+}
+
+h1, h2 {
+    color: #333;
+}
+
+form {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+input[type="text"], input[type="email"], input[type="password"] {
+    width: 300px;
+    height: 30px;
+    padding: 5px;
+    margin-bottom: 10px;
+    border: 1px solid #ccc;
+    border-radius: 3px;
+}
+
+button {
+    background-color: #4CAF50;
+    border: none;
+    color: white;
+    padding: 10px 20px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+    border-radius: 3px;
+}
+
+button:hover {
+    background-color: #45a049;
+    font-weight: bold;
+}
+
+ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+li {
+    margin-bottom: 10px;
+    padding: 10px;
+    background-color: #fff;
+    border: 1px solid #ddd;
+    border-radius: 3px;
+}
+
+.custom-button-blue {
+    background-color: rgb(52, 66, 255);
+    color: white;
+  }
+
+.custom-button-blue:hover {
+    background-color: #303eb9;
+    font-weight: bold;
+}
+  .custom-button-red {
+    background-color: #b12a26;
+    color: white;
+  }
+
+.custom-button-red:hover {
+    background-color: rgb(226, 31, 17);
+    font-weight: bold;
+}
+
+.container.py-3 {
+    max-width: 400px;
+    display: block;
+    margin: 0 auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    box-sizing: border-box;
+  }
+
+  .alert {
+    padding: 12px;
+    border-radius: 3px;
+    font-size: 1.2rem;
+    margin-bottom: 16px;
+    border-width: 2px;
+    border-style: solid;
+  }
+  
+  .alert-error {
+    border-color: rgb(231, 208, 208);
+    background-color: rgb(235, 211, 211);
+    color: rgb(216, 35, 35);
+  }
+  
+  .alert-info {
+    border-color: rgb(255, 255, 255);
+    background-color: rgb(255, 255, 255);
+    color: rgb(12, 153, 31);
+  }
+  
+  .box {
+    margin-bottom: 10px;
+  }
+
+  input[type=file]::file-selector-button {
+    border: 2px solid #111049;
+    padding: .2em .4em;
+    border-radius: .2em;
+    background-color: rgb(52, 66, 255);
+    transition: 1s;
+  }
+  
+  input[type=file]::file-selector-button:hover {
+    background-color: #81ecec;
+    border: 2px solid #00cec9;
+  }
