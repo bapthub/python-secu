@@ -2,16 +2,17 @@ import os
 import base64
 from dotenv import load_dotenv
 from flask import Flask,request,render_template,redirect,url_for, flash, send_file
-from crypto import *
-from pass_check import *
+from services.crypto import *
+from services.pass_check import *
 from flask_pymongo import pymongo
-from email_checking.email_checking import *
+from services.email_checking import *
 from flask_bcrypt import Bcrypt
+from controllers import auth_controller, download_controller
 
 app = Flask(__name__)
 
-app.register_blueprint(auth_routes)
-app.register_blueprint(download_routes)
+app.register_blueprint(auth_controller)
+app.register_blueprint(download_controller)
 
 ### ENV VARIABLES
 load_dotenv('.env')

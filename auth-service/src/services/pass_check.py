@@ -5,6 +5,7 @@ def validate_password(password):
     if len(password) < 10:
         return False
 
+
     # Vérifier la présence d'au moins une lettre majuscule
     if not re.search(r'[A-Z]', password):
         return False
