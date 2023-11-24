@@ -1,10 +1,10 @@
 import re
+import bcrypt
 
 def validate_password(password):
     # Vérifier la longueur du mot de passe
     if len(password) < 10:
         return False
-
 
     # Vérifier la présence d'au moins une lettre majuscule
     if not re.search(r'[A-Z]', password):
@@ -23,3 +23,9 @@ def validate_password(password):
         return False
 
     return True
+
+def generate_hashed_password(password):
+    return bcrypt.generate_password_hash(password)
+
+def check_password_hashed(pass_hash, password):
+    return bcrypt.check_password_hash(pass_hash, password)

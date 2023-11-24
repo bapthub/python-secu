@@ -1,34 +1,34 @@
-import os
-import base64
 from dotenv import load_dotenv
-from flask import Flask,request,render_template,redirect,url_for, flash, send_file
-from services.crypto import *
-from services.pass_check import *
+from flask import Flask, Response
+from src.services.crypto import *
+from src.services.pass_check import *
 from flask_pymongo import pymongo
-from services.email_checking import *
+from src.services.email_checking import *
 from flask_bcrypt import Bcrypt
-from controllers import auth_controller, download_controller
+from src.controllers.auth_controller import auth_controller
+from src.controllers.download_controller import download_controller
+from src.setup import *
 
 app = Flask(__name__)
 
 app.register_blueprint(auth_controller)
 app.register_blueprint(download_controller)
 
+@app.route('/test', methods=['GET'])
+def test():
+    return Response("{test: 'message de test'}", status=200)
+
 ### ENV VARIABLES
 load_dotenv('.env')
 app.secret_key = os.getenv("SECRET_KEY")
 MONGO_URI = os.getenv("MONGO_URI")
+print(MONGO_URI)
 
 ### MONGODB
 client = pymongo.MongoClient(MONGO_URI)
 db = client.get_database('crypto_users')
 user_collection = db['user_collection']
 cryptomail_collection = db['cryptomail_collection']
-
-### PUBKEY & PRIVKEY GENERATION
-path = os.getcwd()
-private_key_file = f"{path}/private_key.pem"
-public_key_file = f"{path}/public_key.pem"
 
 if not os.path.exists(f"{path}/certificates_ca"):
     os.makedirs(f"{path}/certificates_ca")
@@ -44,14 +44,6 @@ else:
 
 ### BCRYPT
 bcrypt = Bcrypt(app)
-
-def generate_hashed_password(password):
-    return bcrypt.generate_password_hash(password)
-
-def check_password_hashed(pass_hash, password):
-    return bcrypt.check_password_hash(pass_hash, password)
-
-
 
 if __name__ == '__main__':
     app.run(debug=False)
