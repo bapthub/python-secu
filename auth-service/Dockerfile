@@ -4,8 +4,12 @@ RUN apt update
 
 WORKDIR /app
 
+<<<<<<< Updated upstream:Dockerfile
 COPY ./src /app
 
+=======
+COPY auth-service/src /app
+>>>>>>> Stashed changes:auth-service/Dockerfile
 RUN pip install -r requirements.txt
 
 EXPOSE 5000

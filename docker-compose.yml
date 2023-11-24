@@ -1,0 +1,16 @@
+services:
+  auth:
+    container_name: dev-auth
+    image: python:3.10.7-bullseye
+    ports:
+      - 3000:3000
+    volumes:
+      - ./auth-service:/app
+
+  front:
+    container_name: dev-front
+    image: python:3.10.7-bullseye
+    ports:
+      - 3001:3000
+    volumes:
+      - ./front:/app
