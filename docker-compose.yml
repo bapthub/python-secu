@@ -12,10 +12,13 @@ services:
     volumes:
       - ./auth-service:/app
 
-  # front:
-  #   container_name: dev-front
-  #   image: python:3.10.7-bullseye
-  #   ports:
-  #     - 3001:3000
-  #   volumes:
-  #     - ./front:/app
+  front:
+    container_name: dev-front
+    image: dev-front
+    build:
+        context: .
+        dockerfile: ./front/Dockerfile
+    ports:
+      - 5001:5000
+    volumes:
+      - ./front:/app
