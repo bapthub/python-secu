@@ -5,10 +5,7 @@ import smtplib
 import time
 import math
 import threading
-
-# Our mail used to send the codes
-sender = "cryptomailepita@gmail.com "
-
+from src.setup import PASSWORD_SMTP,MAIL_SMTP
 
 def send_mail(receiver, cryptomail_collection):
     # Generate a 6 digits code
@@ -17,7 +14,6 @@ def send_mail(receiver, cryptomail_collection):
     update_code(receiver, cryptomail_collection, code)
     # Send the code to the receiver
     send_verification_mail(receiver, code)
-
 
 def verify_mail(mail, cryptomail_collection, code):
     # Verify that the code is valid for the user
@@ -29,11 +25,10 @@ def verify_mail(mail, cryptomail_collection, code):
     else:
         return False
 
-
 def generate_email_code():
     # Generate a 6 digits code
     code = ""
-    for i in range(6):
+    for _ in range(6):
         code += str(random.randint(0, 9))
     return code
 
@@ -73,11 +68,6 @@ def delete_code(receiver, cryptomail_collection, force_delete):
 
 
 def send_verification_mail(receiver, code):
-    # Get the password from the password file
-    password = ""
-    with open('src/email_checking/password.txt') as f: # TODO change the access to the password 
-        password = f.readlines()[0]
-
     # The subject and body of the mail
     subject = "CryptoMail: Verification code"
     body = f"""
@@ -90,7 +80,7 @@ def send_verification_mail(receiver, code):
 
     # Fill the EmailMessage object
     em = EmailMessage()
-    em['From'] = sender
+    em['From'] = MAIL_SMTP
     em['To'] = receiver
     em['Subject'] = subject
     em.set_content(body)
@@ -98,9 +88,9 @@ def send_verification_mail(receiver, code):
     # Setup ssl context
     context = ssl.create_default_context()
 
-    # Connect to the sender mail and send the code to the receiver
+    # Connect to the MAIL_SMTP mail and send the code to the receiver
     with smtplib.SMTP_SSL('smtp.gmail.com', 465, context=context) as smtp:
-        smtp.login(sender, password)
-        smtp.sendmail(sender, receiver, em.as_string())
+        smtp.login(MAIL_SMTP, PASSWORD_SMTP)
+        smtp.sendmail(MAIL_SMTP, receiver, em.as_string())
 
     print(f"The mail to {receiver} has been sent with the verification code.")

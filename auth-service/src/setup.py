@@ -9,9 +9,11 @@ private_key_file = f"{path}/private_key.pem"
 public_key_file = f"{path}/public_key.pem"
 
 ### ENV VARIABLES
-load_dotenv('.env')
+load_dotenv('./src/.env')
 MONGO_URI = os.getenv("MONGO_URI")
-print(MONGO_URI)
+SECRET_KEY = os.getenv("SECRET_KEY")
+MAIL_SMTP = os.getenv("MAIL_SMTP")
+PASSWORD_SMTP = os.getenv("PASSWORD_SMTP")
 
 ### MONGODB
 client = pymongo.MongoClient(MONGO_URI)

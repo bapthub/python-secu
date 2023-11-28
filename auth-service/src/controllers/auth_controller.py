@@ -1,29 +1,27 @@
 import base64
 from flask import (
-    Flask,
     request,
-    render_template,
-    redirect,
-    url_for,
-    flash,
     Blueprint,
     Response,
+    send_file
 )
 from src.services.crypto import *
 from src.services.pass_check import *
 from src.services.email_checking import *
+from src.server import check_password_hashed, generate_hashed_password
 from src.setup import *
-from src.setup import cryptomail_collection
 
 auth_controller = Blueprint("auth_controller", __name__)
 
 ### LOGIN PAGE
 @auth_controller.route("/login", methods=["POST"])
 def login():
+    
+    email = request.form['email']
+    password = request.form['password']
+    certificate_file = request.files["certificate"]
+    
     if "certificate" in request.files:
-        certificate_file = request.files["certificate"]
-        email = request.form["email"]
-        password = request.form["password"]
         existing_mail = user_collection.find_one({"email": email})
 
         if existing_mail:
@@ -35,43 +33,40 @@ def login():
                 if existing_mail.get("status") == "Inactive":
                     return Response("{error:'Compte inactif'}",status=400)
                 # Certificate validity check
-                if certificate_file.filename != "":
-                    serial = existing_mail.get("serial_number")
-                    certificate_file.save(f"/tmp/{certificate_file.filename}")
-                    file_loc = f"/tmp/{certificate_file.filename}"
-                    res = check_certificate_validity(file_loc, email, path, public_key)
-                    if res != "valid":
-                        return Response("{error:'Certificat invalide.'}",status=400)
-                    if os.path.exists(file_loc):
-                        os.remove(file_loc)
-                    return Response(status=200)
-                    # return "Authentification terminée"
-                return Response("{error:'Upload échoué.'}",status=400)
+                serial = existing_mail.get("serial_number")
+                certificate_file.save(f"/tmp/{serial}.pem")
+                file_loc = f"/tmp/{serial}.pem"
+                res = check_certificate_validity(file_loc, email, path, public_key)
+                if res != "valid":
+                    return Response("{error:'Certificat invalide.'}",status=400)
+                if os.path.exists(file_loc):
+                    os.remove(file_loc)
+                return Response("{status: 'Authentification terminée'}",status=200)
             return Response("{error:'Utilisateur ou mot de passe incorrect'}",status=400)
 
         else:
             return Response("{error:'Utilisateur ou mot de passe incorrect'}",status=400)
     return Response("{error:'Données incorrectes'}",status=400)
 
-
 ### SIGN-UP PAGE
 @auth_controller.route("/signup", methods=["POST"])
 def signup():
-    email = request.form["email"]
-    password = request.form["password"]
-    nom = request.form["nom"]
-    prenom = request.form["prenom"]
+    request_data = request.get_json()
+    
+    email = request_data['email']
+    password = request_data['password']
+    nom = request_data['nom']
+    prenom = request_data['prenom']
 
     if not validate_password(password):
         return Response("{error: 'password do not match required statements'}", status=400)
-
+    
     hashed_password = generate_hashed_password(password)
     hashed_password_b64 = base64.b64encode(hashed_password).decode()
 
     existing_email = db.user_collection.find_one({"email": email})
     if existing_email:
-        flash(f"{email} est déjà utilisé", "error")
-        return Response(status=400)
+        return Response("{error: 'email déjà utilisé'}", status=400)
     else:
         db.user_collection.insert_one(
             {
@@ -90,8 +85,10 @@ def signup():
 ### CODE VERIFICATION PAGE
 @auth_controller.route("/code", methods=["POST"])
 def code():
-    email = request.form["email"]
-    code = request.form["code"]
+    request_data = request.get_json()
+
+    email = request_data['email']
+    code = request_data['code']
 
     if verify_mail(email, cryptomail_collection, code):
         existing_mail = user_collection.find_one({"email": email})
@@ -106,36 +103,35 @@ def code():
             {"email": email}, {"$set": {"serial_number": serial_number}}
         )
         db.user_collection.update_one({"email": email}, {"$set": {"status": "Active"}})
-        flash("Code valide.", "info")
-        return Response(status=200)
+        return Response("{status:'Code valide.'}", status=200)
     else:
-        flash("Email ou code incorrect.", "error")
-        return Response(status=400)
+        return Response("{error: 'Email ou code incorrect.'}", status=400)
 
 ### RESEND CODE PAGE
 @auth_controller.route("/resend", methods=["POST"])
 def resend():
-    email = request.form["email"]
-
+    request_data = request.get_json()
+    email = request_data['email']   
+     
     existing_mail = user_collection.find_one({"email": email})
     if existing_mail:
         status = existing_mail.get("status")
         if status == "Active":
-            flash("Compte déjà activé.", "info")
-            return Response(status=400)
+            # flash("", "info")
+            return Response("{status:'Compte déjà activé.'}",status=400)
 
         send_mail(email, cryptomail_collection)
-        flash("Code envoyé.", "info")
-        return Response(status=200)
-    else:
-        return Response(status=200)
+        return Response("{status: 'Code envoyé.'}",status=200)
+    return Response("{error: 'email inconnu'}",status=400)
 
 
 ### CERTIFICATE WITH AUTHENTICATION PAGE
 @auth_controller.route("/certificate", methods=["POST"])
 def certificate():
-    email = request.form["email"]
-    password = request.form["password"]
+    request_data = request.get_json()
+    
+    email = request_data['email']
+    password = request_data['password']
     existing_mail = user_collection.find_one({"email": email})
 
     if existing_mail:
@@ -143,11 +139,9 @@ def certificate():
         user_pass = base64.b64decode(user_pass_b64).decode()
         if check_password_hashed(user_pass, password):
             serial = existing_mail.get("serial_number")
-            file_path = f"certificates_ca/{serial}.pem"
-            return Response("{serial:" + str(serial) + "}", status=200)
+            file_path = f"/app/certificates_ca/{serial}.pem"
+            return send_file(file_path, as_attachment=True)
         else:
-            flash("Utilisateur ou mot de passe incorrect.", "error")
-            return Response(status=400)
+            return Response("{error: 'Utilisateur ou mot de passe incorrect.'}",status=400)
     else:
-        flash("Utilisateur ou mot de passe incorrect.", "error")
-        return Response(status=400)
+        return Response("{error: 'Utilisateur ou mot de passe incorrect.'}",status=400)

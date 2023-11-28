@@ -1,5 +1,9 @@
 all:
-	docker compose up -d
+	docker compose up -d --build
+
+restart:
+	docker compose down
+	docker compose up -d --build
 
 run:
 	docker build -t cryptomail-app .

@@ -8,6 +8,7 @@ services:
 
     ports:
       - 5000:5000
+      - 27017:27017
     volumes:
       - ./auth-service:/app
 
