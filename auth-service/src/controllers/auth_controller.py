@@ -13,6 +13,7 @@ from src.services.crypto import *
 from src.services.pass_check import *
 from src.services.email_checking import *
 from src.setup import *
+from src.setup import cryptomail_collection
 
 auth_controller = Blueprint("auth_controller", __name__)
 
@@ -32,8 +33,7 @@ def login():
             if check_password_hashed(user_pass, password):
                 # Active account check
                 if existing_mail.get("status") == "Inactive":
-                    flash("Votre compte n'est pas activé.", "error")
-                    return redirect(url_for("resend"))
+                    return Response("{error:'Compte inactif'}",status=400)
                 # Certificate validity check
                 if certificate_file.filename != "":
                     serial = existing_mail.get("serial_number")
@@ -41,21 +41,17 @@ def login():
                     file_loc = f"/tmp/{certificate_file.filename}"
                     res = check_certificate_validity(file_loc, email, path, public_key)
                     if res != "valid":
-                        flash("Certificat invalide.", "error")
-                        return redirect(url_for("login"))
+                        return Response("{error:'Certificat invalide.'}",status=400)
                     if os.path.exists(file_loc):
                         os.remove(file_loc)
-                    return "Authentification terminée"
-                flash("Upload échoué.", "error")
-                return redirect(url_for("login"))
-            flash("Utilisateur ou mot de passe incorrect", "error")
-            return redirect(url_for("login"))
+                    return Response(status=200)
+                    # return "Authentification terminée"
+                return Response("{error:'Upload échoué.'}",status=400)
+            return Response("{error:'Utilisateur ou mot de passe incorrect'}",status=400)
 
         else:
-            flash("Utilisateur ou mot de passe incorrect", "error")
-            return redirect(url_for("login"))
-    flash("Données incorrectes", "error")
-    return redirect(url_for("login"))
+            return Response("{error:'Utilisateur ou mot de passe incorrect'}",status=400)
+    return Response("{error:'Données incorrectes'}",status=400)
 
 
 ### SIGN-UP PAGE
@@ -67,8 +63,7 @@ def signup():
     prenom = request.form["prenom"]
 
     if not validate_password(password):
-        flash("Le mot de passe ne respecte pas les conditions requises.", "error")
-        return render_template("signup.html")
+        return Response("{error: 'password do not match required statements'}", status=400)
 
     hashed_password = generate_hashed_password(password)
     hashed_password_b64 = base64.b64encode(hashed_password).decode()
@@ -116,7 +111,6 @@ def code():
     else:
         flash("Email ou code incorrect.", "error")
         return Response(status=400)
-
 
 ### RESEND CODE PAGE
 @auth_controller.route("/resend", methods=["POST"])
