@@ -140,7 +140,7 @@ def login():
                     return Response("{error:'Certificat invalide.'}",status=400)
                 if os.path.exists(file_loc):
                     os.remove(file_loc)
-                jwt_token = encode_payload(2)
+                jwt_token = encode_jwt(2, {"email": email})
                 return Response("{status: 'Authentification terminée', 'jwt': '" + jwt_token + "'}", status=200)
             return Response("{error:'Utilisateur ou mot de passe incorrect'}",status=400)
 
@@ -149,12 +149,12 @@ def login():
     return Response("{error:'Données incorrectes'}",status=400)
 
 ### LOGIN PAGE WITH JWT
-@auth_controller.route("/login_jwt", methods=["POST"])
+@auth_controller.route("/verify", methods=["POST"])
 def login_jwt():
     
     request_data = request.get_json()
     encoded_jwt = request_data["jwt"]
-    return_val = check_payload(encoded_jwt)
+    return_val = check_jwt(encoded_jwt)
     if return_val == True:
         return Response("{status:'Token Valide, authentification réussie'}", status=200)
     else:
