@@ -37,7 +37,7 @@ async function verifyCode(formData) {
 }
 
 async function resendCode(formData) {
-    await sendFormData('/resend-code', formData)
+    await sendFormData('/resend', formData)
 }
 
 async function getCertificates(formData) {
@@ -54,6 +54,6 @@ async function getCertificates(formData) {
 
 async function login(formData) {
     const res = await sendFormData('/login', formData, true)
-    // const data = await res.json()
-    // localStorage.setItem('token', data.access_token)
+    const data = await res.json()
+    localStorage.setItem('access_token', data.access_token)
 }
