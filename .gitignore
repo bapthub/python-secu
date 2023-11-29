@@ -1,6 +1,7 @@
 logs/
 .idea
-*.pem
+auth-service/certificates_ca/
+auth-service/*.pem
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
