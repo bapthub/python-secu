@@ -1,5 +1,5 @@
 
-const baseUrl = "http://localhost:5001"
+const baseUrl = "https://auth.demo.com"
 
 async function sendFormData(url, formData, multipart= false) {
     const plainFormData = Object.fromEntries(formData.entries());
