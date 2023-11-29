@@ -10,43 +10,9 @@ from src.services.pass_check import *
 from src.services.email_checking import *
 from src.server import check_password_hashed, generate_hashed_password
 from src.setup import *
+from src.services.service_jwt import *
 
 auth_controller = Blueprint("auth_controller", __name__)
-
-### LOGIN PAGE
-@auth_controller.route("/login", methods=["POST"])
-def login():
-    
-    email = request.form['email']
-    password = request.form['password']
-    certificate_file = request.files["certificate"]
-    
-    if "certificate" in request.files:
-        existing_mail = user_collection.find_one({"email": email})
-
-        if existing_mail:
-            user_pass_b64 = existing_mail.get("password")
-            user_pass = base64.b64decode(user_pass_b64).decode()
-            # Password check
-            if check_password_hashed(user_pass, password):
-                # Active account check
-                if existing_mail.get("status") == "Inactive":
-                    return Response("{error:'Compte inactif'}",status=400)
-                # Certificate validity check
-                serial = existing_mail.get("serial_number")
-                certificate_file.save(f"/tmp/{serial}.pem")
-                file_loc = f"/tmp/{serial}.pem"
-                res = check_certificate_validity(file_loc, email, path, public_key)
-                if res != "valid":
-                    return Response("{error:'Certificat invalide.'}",status=400)
-                if os.path.exists(file_loc):
-                    os.remove(file_loc)
-                return Response("{status: 'Authentification terminée'}",status=200)
-            return Response("{error:'Utilisateur ou mot de passe incorrect'}",status=400)
-
-        else:
-            return Response("{error:'Utilisateur ou mot de passe incorrect'}",status=400)
-    return Response("{error:'Données incorrectes'}",status=400)
 
 ### SIGN-UP PAGE
 @auth_controller.route("/signup", methods=["POST"])
@@ -145,3 +111,51 @@ def certificate():
             return Response("{error: 'Utilisateur ou mot de passe incorrect.'}",status=400)
     else:
         return Response("{error: 'Utilisateur ou mot de passe incorrect.'}",status=400)
+    
+### LOGIN PAGE
+@auth_controller.route("/login", methods=["POST"])
+def login():
+    
+    email = request.form['email']
+    password = request.form['password']
+    certificate_file = request.files["certificate"]
+    
+    if "certificate" in request.files:
+        existing_mail = user_collection.find_one({"email": email})
+
+        if existing_mail:
+            user_pass_b64 = existing_mail.get("password")
+            user_pass = base64.b64decode(user_pass_b64).decode()
+            # Password check
+            if check_password_hashed(user_pass, password):
+                # Active account check
+                if existing_mail.get("status") == "Inactive":
+                    return Response("{error:'Compte inactif'}",status=400)
+                # Certificate validity check
+                serial = existing_mail.get("serial_number")
+                certificate_file.save(f"/tmp/{serial}.pem")
+                file_loc = f"/tmp/{serial}.pem"
+                res = check_certificate_validity(file_loc, email, path, public_key)
+                if res != "valid":
+                    return Response("{error:'Certificat invalide.'}",status=400)
+                if os.path.exists(file_loc):
+                    os.remove(file_loc)
+                jwt_token = encode_payload(2)
+                return Response("{status: 'Authentification terminée', 'jwt': '" + jwt_token + "'}", status=200)
+            return Response("{error:'Utilisateur ou mot de passe incorrect'}",status=400)
+
+        else:
+            return Response("{error:'Utilisateur ou mot de passe incorrect'}",status=400)
+    return Response("{error:'Données incorrectes'}",status=400)
+
+### LOGIN PAGE WITH JWT
+@auth_controller.route("/login_jwt", methods=["POST"])
+def login_jwt():
+    
+    request_data = request.get_json()
+    encoded_jwt = request_data["jwt"]
+    return_val = check_payload(encoded_jwt)
+    if return_val == True:
+        return Response("{status:'Token Valide, authentification réussie'}", status=200)
+    else:
+        return Response('{"error": "' + str(return_val) + '"}', status=400)
