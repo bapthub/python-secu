@@ -7,15 +7,37 @@ services:
       dockerfile: ./auth-service/Dockerfile
 
     ports:
-      - 5000:5000
+      - 5001:5000
       - 27017:27017
     volumes:
       - ./auth-service:/app
 
-  # front:
-  #   container_name: dev-front
-  #   image: python:3.10.7-bullseye
-  #   ports:
-  #     - 3001:3000
-  #   volumes:
-  #     - ./front:/app
+  front:
+    container_name: dev-front
+    image: dev-front
+    build:
+        context: .
+        dockerfile: ./front/Dockerfile
+    ports:
+      - 5002:5000
+    volumes:
+      - ./front:/app
+
+  nginx:
+    image: nginx:1.22-alpine
+    command: "/bin/sh -c 'while :; do sleep 6h; nginx -s reload; done & exec nginx -g \"daemon off;\"'"
+    volumes:
+      - ./logs:/var/log/nginx/
+      - ./nginx/conf/nginx.conf:/etc/nginx/nginx.conf
+      - ./nginx/conf/proxy.conf:/etc/nginx/proxy.conf
+      - ./nginx/conf/dhparam.pem:/etc/nginx/dhparam.pem
+      - ./nginx/conf/options-ssl-nginx.conf:/etc/nginx/options-ssl-nginx.conf
+      - ./nginx/conf/ssl.conf:/etc/nginx/ssl.conf
+      - ./nginx/conf/cert.pem/:/etc/nginx/cert.pem
+      - ./nginx/conf/key.pem/:/etc/nginx/key.pem
+      - ./nginx/conf/sites-enabled/:/etc/nginx/sites-enabled/
+    restart: on-failure
+    ports:
+      - 80:80
+      - 443:443
+      #    network_mode: "host"
