@@ -28,8 +28,8 @@
     <script src="{{ url_for('static', filename='auth-api.js') }}"></script>
     <script>
         async function handleCertificate(formData) {
-            const data = await getCertificates(formData)
-            window.location.href = "/download_certificate/" + data.serial;
+            await getCertificates(formData)
+            redirectToIndex()
         }
         submitFormHandler('certificate-form', handleCertificate)
 

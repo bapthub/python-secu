@@ -7,7 +7,7 @@ services:
       dockerfile: ./auth-service/Dockerfile
 
     ports:
-      - 5000:5000
+      - 5001:5000
       - 27017:27017
     volumes:
       - ./auth-service:/app
@@ -19,6 +19,6 @@ services:
         context: .
         dockerfile: ./front/Dockerfile
     ports:
-      - 5001:5000
+      - 5002:5000
     volumes:
       - ./front:/app
