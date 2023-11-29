@@ -31,7 +31,7 @@ def generate_key_pair() -> Tuple[rsa.RSAPrivateKey, rsa.RSAPublicKey]:
     return private_key, public_key
 
 def store_key_pair(private_key:rsa.RSAPrivateKey, public_key:rsa.RSAPublicKey,
-                   private_key_file:str, public_key_file:str) -> None:
+                    private_key_file:str, public_key_file:str) -> None:
     # Serialize the private key
     private_key_bytes = private_key.private_bytes(
         encoding=serialization.Encoding.PEM,
@@ -109,7 +109,7 @@ def generate_attribute_certificate(holder_name:str,holder_surname:str,holder_ema
     return pem_cert,serial_number
 
 def check_certificate_validity(cert_path:str,email:str,path:str,
-                               public_key:rsa.RSAPublicKey) -> str:
+                                public_key:rsa.RSAPublicKey) -> str:
     #Get certificate bytes from file
     with open(cert_path, 'rb') as cert_file:
         cert_bytes = cert_file.read()

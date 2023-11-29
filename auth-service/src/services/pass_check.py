@@ -1,4 +1,5 @@
 import re
+from flask_bcrypt import generate_password_hash,check_password_hash
 
 def validate_password(password):
     # Vérifier la longueur du mot de passe
@@ -22,3 +23,9 @@ def validate_password(password):
         return False
 
     return True
+
+def generate_hashed_password(password):
+    return generate_password_hash(password)
+
+def check_password_hashed(pass_hash, password):
+    return check_password_hash(pass_hash, password)
